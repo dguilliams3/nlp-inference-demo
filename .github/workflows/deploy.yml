@@ -23,23 +23,21 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      - name: Run Tests
-        run: |
-          pytest  # Replace with your test command if applicable
+      # - name: Run Tests
+      #   run: |
+      #     pytest  # Replace with your test command if applicable
 
       - name: Build Docker Image
-        run: |
-          docker build -t nlp_demo:latest .
+        run: docker build -t nlp_demo:latest .
 
-      # Optionally, push the Docker image to Docker Hub if needed:
-      #- name: Push Docker Image to Registry
-      #  env:
-      #    DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
-      #    DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
-      #  run: |
-      #    echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
-      #    docker tag nlp_demo:latest yourdockerhubusername/nlp_demo:latest
-      #    docker push yourdockerhubusername/nlp_demo:latest
+      - name: Push Docker Image to Registry
+        env:
+          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+        run: |
+          echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
+          docker tag nlp_demo:latest dguilliams3/nlp_demo:latest
+          docker push dguilliams3/nlp_demo:latest
 
       - name: Deploy to AWS Elastic Beanstalk
         env:

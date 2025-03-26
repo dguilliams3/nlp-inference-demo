@@ -1,0 +1,5 @@
+transformers
+# Need to use the nightly build for CUDA 12.6 support.  If your CUDA version is different, change the `cu126` part of the URL to match your version.
+--extra-index-url https://download.pytorch.org/whl/nightly/cu126
+torch --pre
+google-cloud-bigquery

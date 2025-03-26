@@ -1,0 +1,26 @@
+# config/config.yaml
+
+# Name of the HuggingFace model to use for sentiment analysis
+model: "distilbert-base-uncased-finetuned-sst-2-english"
+
+# The task for the HuggingFace pipeline
+task: "sentiment-analysis"
+
+# Sample texts for local testing (unchanged from before)
+sample_texts:
+  - "I love this product!"
+  - "This is the worst thing I've ever bought."
+  - "It was okay, but I wouldn’t recommend it."
+  - "Absolutely phenomenal quality, worth every penny!"
+  - "I'm not sure how I feel about this."
+
+# BigQuery configuration
+bigquery:
+  # Dataset name you created
+  dataset: "distilbert_demo"
+
+  # Table for raw reviews
+  reviews_table: "nlp_demo_reviews"
+
+  # Table for sentiment results
+  sentiment_table: "nlp_demo_sentiments"

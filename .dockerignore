@@ -1,0 +1,5 @@
+venv/
+*.pyc
+__pycache__/
+src/nlp_demo.py
+.git

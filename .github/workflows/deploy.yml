@@ -1,0 +1,52 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.8'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run Tests
+        run: |
+          pytest  # Replace with your test command if applicable
+
+      - name: Build Docker Image
+        run: |
+          docker build -t nlp_demo:latest .
+
+      # Optionally, push the Docker image to Docker Hub if needed:
+      #- name: Push Docker Image to Registry
+      #  env:
+      #    DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+      #    DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+      #  run: |
+      #    echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
+      #    docker tag nlp_demo:latest yourdockerhubusername/nlp_demo:latest
+      #    docker push yourdockerhubusername/nlp_demo:latest
+
+      - name: Deploy to AWS Elastic Beanstalk
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: 'us-west-2'
+        run: |
+          pip install awsebcli
+          eb init -p docker nlp-demo --region $AWS_DEFAULT_REGION
+          eb deploy nlp-demo-env

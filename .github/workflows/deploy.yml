@@ -13,37 +13,31 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v2
 
-      - name: Set up Python
-        uses: actions/setup-python@v2
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v2
         with:
-          python-version: '3.8'
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
 
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
-
-      # - name: Run Tests
-      #   run: |
-      #     pytest  # Replace with your test command if applicable
-
-      - name: Build Docker Image
-        run: docker build -t nlp_demo:latest .
-
-      - name: Push Docker Image to Registry
-        env:
-          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
-          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
-        run: |
-          echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
-          docker tag nlp_demo:latest dguilliams3/nlp_demo:latest
-          docker push dguilliams3/nlp_demo:latest
+      - name: Build and push Docker image with caching
+        uses: docker/build-push-action@v3
+        with:
+          context: .
+          push: true
+          tags: dguilliams3/nlp_demo:latest
+          # Use the previously built image as a cache source
+          cache-from: type=registry,ref=dguilliams3/nlp_demo:latest
+          # Export the cache to the image for future builds
+          cache-to: type=inline
 
       - name: Deploy to AWS Elastic Beanstalk
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_DEFAULT_REGION: 'us-west-2'
+          AWS_DEFAULT_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
         run: |
           pip install awsebcli
           eb init -p docker nlp-demo --region $AWS_DEFAULT_REGION

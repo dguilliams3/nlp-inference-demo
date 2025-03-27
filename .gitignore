@@ -4,6 +4,11 @@
 !.elasticbeanstalk/*.cfg.yml
 !.elasticbeanstalk/*.global.yml
 
+# Virtual Environment and IDE files
 /venv/*
 *.pyc
 
+# Environment variables 
+.env
+.ebextensions/
+credentials/*.json

@@ -4,30 +4,24 @@ FROM python:3.8-slim
 # Set a working directory
 WORKDIR /app
 
-# Install system dependencies (if any) and upgrade pip
+# Install system dependencies and upgrade pip
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
  && rm -rf /var/lib/apt/lists/*
 
-# Upgrade pip
 RUN pip install --upgrade pip
 
-# Copy the requirements file first to leverage Docker cache
+# Copy requirements and install Python dependencies
 COPY requirements.txt .
-
-# Install Python dependencies
 RUN pip install -r requirements.txt
 
 # Copy the rest of the application code and configuration
 COPY . .
 
-# Expose any required port (if our app is serving an API, for example)
-# EXPOSE 8080
+# (Optional) Expose a port if you later add an API server (e.g., EXPOSE 8080)
 
-# Define environment variables (these can be overridden at runtime)
+# Define non-sensitive environment variables; sensitive ones will be provided externally
 ENV CONFIG_FILE=config.yaml
-ENV GOOGLE_APPLICATION_CREDENTIALS=/app/credentials/<credentials file name>.json
 
-# Run the application
-# Here, we assume that we are running the BigQuery integration script
+# Run the application using the entrypoint script with a task argument
 CMD ["python", "src/entrypoint.py", "--task", "bigquery"]

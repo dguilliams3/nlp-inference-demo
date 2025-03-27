@@ -4,5 +4,4 @@
 
 # Environment variables 
 .env
-.ebextensions/
 credentials/*.json

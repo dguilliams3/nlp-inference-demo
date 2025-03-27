@@ -6,7 +6,7 @@ on:
       - main
 
 jobs:
-  build:
+  deploy:
     runs-on: ubuntu-latest
     environment: 2025-03-AWS
 
@@ -14,38 +14,23 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v2
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v2
-
       - name: Log in to Docker Hub
         uses: docker/login-action@v2
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
-      - name: Build and push Docker image with caching
-        uses: docker/build-push-action@v3
-        with:
-          context: .
-          push: true
-          tags: dguilliams3/nlp_demo:latest
-          cache-from: type=registry,ref=dguilliams3/nlp_demo:latest
-          cache-to: type=inline
+      - name: Inject credentials filename into Dockerrun.aws.json
+        run: |
+          sed -i "s/\${GOOGLE_CREDENTIALS_FILE}/${{ secrets.GOOGLE_CREDENTIALS_FILE }}/g" Dockerrun.aws.json
 
-      - name: Deploy to AWS Elastic Beanstalk
+      - name: Install EB CLI and Deploy
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_DEFAULT_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
-          GOOGLE_CREDENTIALS_FILE: ${{ secrets.GOOGLE_CREDENTIALS_FILE }}
         run: |
-          # Inject the credentials filename into the Dockerrun.aws.json file
-          sed -i "s/\${GOOGLE_CREDENTIALS_FILE}/${GOOGLE_CREDENTIALS_FILE}/g" Dockerrun.aws.json
-
           pip install awsebcli
 
-          # Set the environment variable for Google credentials in EB
-          eb setenv GOOGLE_APPLICATION_CREDENTIALS=/app/credentials/$GOOGLE_CREDENTIALS_FILE
-
-          # Deploy the application
-          eb deploy  
+          # Deploy to preconfigured environment
+          eb deploy nlp-demo-env

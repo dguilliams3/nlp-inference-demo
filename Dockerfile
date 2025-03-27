@@ -1,7 +1,7 @@
 # Use a slim Python image
 FROM python:3.8-slim
 
-# Set a working directory
+# Set the working directory to /app inside the container
 WORKDIR /app
 
 # Install system dependencies and upgrade pip
@@ -15,13 +15,20 @@ RUN pip install --upgrade pip
 COPY requirements.txt .
 RUN pip install -r requirements.txt
 
-# Copy the rest of the application code and configuration
+# Copy the entire project (includes .env, /src, /credentials, etc.)
 COPY . .
 
 # (Optional) Expose a port if you later add an API server (e.g., EXPOSE 8080)
 
-# Define non-sensitive environment variables; sensitive ones will be provided externally
-ENV CONFIG_FILE=config.yaml
+# Define non-sensitive environment variables.
+# The CONFIG_FILE environment variable points to your configuration file.
+# Note: .env (with sensitive values) is located in the root and can be overridden or mounted externally.
+ENV CONFIG_FILE=config/config.yaml
 
-# Run the application using the entrypoint script with a task argument
+# (Optional) For added security in production, consider running as a non-root user.
+# RUN adduser --disabled-password myuser
+# USER myuser
+
+# Run the application using the entrypoint script with a task argument.
+# This launches the pipeline using the scripts in the /src directory.
 CMD ["python", "src/entrypoint.py", "--task", "bigquery"]

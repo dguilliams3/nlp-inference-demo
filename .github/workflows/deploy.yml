@@ -28,9 +28,7 @@ jobs:
           context: .
           push: true
           tags: dguilliams3/nlp_demo:latest
-          # Use the previously built image as a cache source
           cache-from: type=registry,ref=dguilliams3/nlp_demo:latest
-          # Export the cache to the image for future builds
           cache-to: type=inline
 
       - name: Deploy to AWS Elastic Beanstalk
@@ -38,7 +36,12 @@ jobs:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_DEFAULT_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
+          GOOGLE_CREDENTIALS_FILE: ${{ secrets.GOOGLE_CREDENTIALS_FILE }}
         run: |
           pip install awsebcli
           eb init -p docker nlp-demo --region $AWS_DEFAULT_REGION
+
+          # Set env variable dynamically using GitHub secret
+          eb setenv GOOGLE_APPLICATION_CREDENTIALS=/app/credentials/$GOOGLE_CREDENTIALS_FILE
           eb deploy nlp-demo-env
+  

@@ -44,10 +44,6 @@ jobs:
 
           pip install awsebcli
 
-          # initiate eb and assign environment
-          eb init nlp-demo --region $AWS_DEFAULT_REGION
-          eb use nlp-demo-env
-
           # Set the environment variable for Google credentials in EB
           eb setenv GOOGLE_APPLICATION_CREDENTIALS=/app/credentials/$GOOGLE_CREDENTIALS_FILE
 

@@ -40,9 +40,13 @@ jobs:
           GOOGLE_CREDENTIALS_FILE: ${{ secrets.GOOGLE_CREDENTIALS_FILE }}
         run: |
           pip install awsebcli
-          eb init -p docker nlp-demo --region $AWS_DEFAULT_REGION
 
-          # Set env variable dynamically using GitHub secret
+          # Initialize EB CLI and set the environment
+          eb init -p docker nlp-demo --region $AWS_DEFAULT_REGION
+          eb use nlp-demo-env
+
+          # Set the Google credentials filepath for BigQuery
           eb setenv GOOGLE_APPLICATION_CREDENTIALS=/app/credentials/$GOOGLE_CREDENTIALS_FILE
-          eb deploy nlp-demo-env
-  
+
+          # Deploy to the specified environment
+          eb deploy

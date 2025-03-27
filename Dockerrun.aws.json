@@ -1,0 +1,29 @@
+{
+    "AWSEBDockerrunVersion": "1",
+    "Image": {
+      "Name": "dguilliams3/nlp_demo:latest",
+      "Update": "true"
+    },
+    "Ports": [
+      {
+        "ContainerPort": 8080
+      }
+    ],
+    "Environment": [
+      {
+        "Name": "GOOGLE_CREDENTIALS_FILE",
+        "Value": "${GOOGLE_CREDENTIALS_FILE}"
+      },
+      {
+        "Name": "GOOGLE_APPLICATION_CREDENTIALS",
+        "Value": "/app/credentials/${GOOGLE_CREDENTIALS_FILE}"
+      }
+    ],
+    "Volumes": [
+      {
+        "HostDirectory": "/app/credentials",
+        "ContainerDirectory": "/app/credentials"
+      }
+    ]
+  }
+  

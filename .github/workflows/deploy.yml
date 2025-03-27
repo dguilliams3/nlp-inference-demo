@@ -39,14 +39,17 @@ jobs:
           AWS_DEFAULT_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
           GOOGLE_CREDENTIALS_FILE: ${{ secrets.GOOGLE_CREDENTIALS_FILE }}
         run: |
+          # Inject the credentials filename into the Dockerrun.aws.json file
+          sed -i "s/\${GOOGLE_CREDENTIALS_FILE}/${GOOGLE_CREDENTIALS_FILE}/g" Dockerrun.aws.json
+
           pip install awsebcli
 
-          # Initialize EB CLI and set the environment
-          eb init -p docker nlp-demo --region $AWS_DEFAULT_REGION
+          # Initialize EB CLI without the -p option, so AWS just pulls the pre-built image
+          eb init nlp-demo --region $AWS_DEFAULT_REGION
           eb use nlp-demo-env
 
-          # Set the Google credentials filepath for BigQuery
+          # Set the environment variable for Google credentials
           eb setenv GOOGLE_APPLICATION_CREDENTIALS=/app/credentials/$GOOGLE_CREDENTIALS_FILE
 
-          # Deploy to the specified environment
+          # Deploy the application
           eb deploy

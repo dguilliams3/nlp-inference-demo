@@ -3,22 +3,35 @@ import yaml
 import random
 import datetime
 import torch
+import logging
 from transformers import pipeline
 from google.cloud import bigquery
+from typing import Any, Dict, List
 
-def load_config(config_file: str):
+# Setup basic logging configuration
+logging.basicConfig(level=logging.INFO, format='%(asctime)s [%(levelname)s] %(message)s')
+logger = logging.getLogger(__name__)
+
+def load_config(config_file: str) -> Dict[str, Any]:
     """Load configuration from a YAML file."""
     with open(config_file, "r") as file:
-        return yaml.safe_load(file)
+        config = yaml.safe_load(file)
+    return config
 
-def load_bigquery_client():
+def load_bigquery_client() -> bigquery.Client:
     """
     Create and return a BigQuery client.
     Expects GOOGLE_APPLICATION_CREDENTIALS to be set to the path of a service account key JSON.
     """
-    return bigquery.Client()
+    try:
+        client = bigquery.Client()
+        logger.info("BigQuery client loaded successfully.")
+        return client
+    except Exception as e:
+        logger.error("Failed to create BigQuery client: %s", e)
+        raise
 
-def fetch_reviews(client, dataset, reviews_table, limit=5):
+def fetch_reviews(client: bigquery.Client, dataset: str, reviews_table: str, limit: int = 5) -> List[Any]:
     """
     Fetch a limited number of reviews from the nlp_demo_reviews table.
     
@@ -36,10 +49,16 @@ def fetch_reviews(client, dataset, reviews_table, limit=5):
         FROM `{client.project}.{dataset}.{reviews_table}`
         LIMIT {limit}
     """
-    query_job = client.query(query)
-    return list(query_job.result())
+    try:
+        query_job = client.query(query)
+        results = list(query_job.result())
+        logger.info("Fetched %d reviews from BigQuery.", len(results))
+        return results
+    except Exception as e:
+        logger.error("Error fetching reviews: %s", e)
+        raise
 
-def insert_sentiment_results(client, dataset, sentiment_table, rows):
+def insert_sentiment_results(client: bigquery.Client, dataset: str, sentiment_table: str, rows: List[Dict[str, Any]]) -> None:
     """
     Insert sentiment analysis results into the nlp_demo_sentiments table.
     
@@ -51,13 +70,25 @@ def insert_sentiment_results(client, dataset, sentiment_table, rows):
                            sentiment_id, review_id, sentiment_label, sentiment_score, model_name, processed_at
     """
     table_ref = client.dataset(dataset).table(sentiment_table)
-    errors = client.insert_rows_json(table_ref, rows)
-    if errors:
-        print("Encountered errors while inserting rows: ", errors)
-    else:
-        print("Data inserted successfully.")
+    try:
+        errors = client.insert_rows_json(table_ref, rows)
+        if errors:
+            logger.error("Encountered errors while inserting rows: %s", errors)
+        else:
+            logger.info("Data inserted successfully into %s.", sentiment_table)
+    except Exception as e:
+        logger.error("Exception during data insertion: %s", e)
+        raise
 
-def run_bigquery_pipeline():
+def run_bigquery_pipeline() -> None:
+    """
+    Execute the BigQuery sentiment analysis pipeline:
+      - Load configuration.
+      - Connect to BigQuery.
+      - Fetch reviews.
+      - Run sentiment analysis.
+      - Insert results back into BigQuery.
+    """
     # Load configuration from config.yaml
     config_path = os.path.join(os.path.dirname(__file__), "..", "config", "config.yaml")
     config = load_config(config_path)
@@ -68,8 +99,8 @@ def run_bigquery_pipeline():
     # Fetch reviews from BigQuery
     reviews = fetch_reviews(
         client,
-        bq_config["dataset"],        # e.g. 'distilbert_demo'
-        bq_config["reviews_table"],    # e.g. 'nlp_demo_reviews'
+        bq_config["dataset"],         # e.g. 'distilbert_demo'
+        bq_config["reviews_table"],     # e.g. 'nlp_demo_reviews'
         limit=5
     )
 
@@ -86,14 +117,12 @@ def run_bigquery_pipeline():
     sentiment_rows = []
     for idx, row in enumerate(reviews):
         review_id = row.review_id
-        # Get the actual result from the classifier
         result = results[idx]
         sentiment = result["label"]
         score = result["score"]
 
         # Generate a random sentiment_id for demonstration purposes.
         sentiment_id = random.randint(100000, 999999)
-        # Create a timezone-aware timestamp string for processed_at.
         processed_at = datetime.datetime.now(datetime.timezone.utc).isoformat()
 
         sentiment_rows.append({
@@ -105,13 +134,12 @@ def run_bigquery_pipeline():
             "processed_at": processed_at
         })
 
-        print(f"Processed review {review_id}: {sentiment} (score={score:.4f})")
+        logger.info("Processed review %s: %s (score=%.4f)", review_id, sentiment, score)
 
-    # Insert the sentiment analysis results back into BigQuery
     insert_sentiment_results(
         client,
         bq_config["dataset"],
-        bq_config["sentiment_table"],  # e.g. 'nlp_demo_sentiments'
+        bq_config["sentiment_table"],
         sentiment_rows
     )
 

@@ -1,0 +1,29 @@
+name: Run Sentiment Pipeline
+
+on:
+  schedule:
+    - cron: '0 0 * * *'  # Nightly 7 PM EST/ 8 PM EDT
+  workflow_dispatch:
+
+jobs:
+  run-pipeline:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Pull and run container
+        run: |
+          docker pull dguilliams3/nlp_demo:latest
+          CRED_FILE=${{ secrets.GOOGLE_CREDENTIALS_FILE }}
+          docker run \
+            -v ${{ github.workspace }}/credentials/$CRED_FILE:/app/credentials/$CRED_FILE \
+            -e GOOGLE_APPLICATION_CREDENTIALS=/app/credentials/$CRED_FILE \
+            dguilliams3/nlp_demo:latest

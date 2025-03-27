@@ -5,7 +5,3 @@
 # Environment variables 
 .env
 credentials/*.json
-
-# Docker files (Since we pull the image from Docker Hub on the EB instance)
-Dockerfile
-docker-compose.yml

@@ -4,7 +4,6 @@ services:
     image: dguilliams3/nlp_demo:latest
     environment:
       CONFIG_FILE: config.yaml
-      # Sets GOOGLE_APPLICATION_CREDENTIALS from the value in the .env file
       GOOGLE_APPLICATION_CREDENTIALS: /app/credentials/${GOOGLE_CREDENTIALS_FILE}
     volumes:
       - ./credentials:/app/credentials

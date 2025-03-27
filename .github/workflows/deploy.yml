@@ -44,8 +44,8 @@ jobs:
 
           pip install awsebcli
 
-          # Pipe "yes" to automatically answer prompts in eb init
-          yes | eb init nlp-demo --region $AWS_DEFAULT_REGION
+          # initiate eb and assign environment
+          eb init nlp-demo --region $AWS_DEFAULT_REGION
           eb use nlp-demo-env
 
           # Set the environment variable for Google credentials in EB

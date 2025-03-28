@@ -31,32 +31,63 @@ def load_bigquery_client() -> bigquery.Client:
         logger.error("Failed to create BigQuery client: %s", e)
         raise
 
+def safe_table_reference(client: bigquery.Client, dataset: str, table: str) -> str:
+    """
+    Safely construct a fully qualified table reference for BigQuery.
+    Validates that the dataset and table names are proper identifiers.
+    
+    Parameters:
+        client (bigquery.Client): Authenticated BigQuery client.
+        dataset (str): Name of the dataset.
+        table (str): Name of the table.
+        
+    Returns:
+        str: A fully qualified table reference in the form `project.dataset.table`
+    """
+    # Check that dataset and table names are safe (only contain alphanumerics and underscores)
+    if not dataset.isidentifier() or not table.isidentifier():
+        raise ValueError("Invalid dataset or table name.")
+    return f"`{client.project}.{dataset}.{table}`"
+
 def fetch_reviews(client: bigquery.Client, dataset: str, reviews_table: str, limit: int = 5) -> List[Any]:
     """
-    Fetch a limited number of reviews from the nlp_demo_reviews table.
+    Fetch a limited number of reviews from the nlp_demo_reviews table using a parameterized query.
     
     Parameters:
         client (bigquery.Client): Authenticated BigQuery client.
         dataset (str): Name of the dataset (e.g., 'distilbert_demo').
         reviews_table (str): Name of the reviews table (e.g., 'nlp_demo_reviews').
         limit (int): Number of rows to fetch.
-
+    
     Returns:
         List of rows, each row with review_id and review_text fields.
     """
+    # Safely build the table reference
+    table_ref = safe_table_reference(client, dataset, reviews_table)
+    
+    # Build the query string with a parameter placeholder for limit
     query = f"""
         SELECT review_id, review_text
-        FROM `{client.project}.{dataset}.{reviews_table}`
-        LIMIT {limit}
+        FROM {table_ref}
+        LIMIT @limit
     """
+    # Create a QueryJobConfig with a parameter for limit.
+    job_config = bigquery.QueryJobConfig(
+        query_parameters=[
+            bigquery.ScalarQueryParameter("limit", "INT64", limit)
+        ]
+    )
+    
     try:
-        query_job = client.query(query)
+        # Run the query with the job_config
+        query_job = client.query(query, job_config=job_config)
         results = list(query_job.result())
         logger.info("Fetched %d reviews from BigQuery.", len(results))
         return results
     except Exception as e:
         logger.error("Error fetching reviews: %s", e)
         raise
+
 
 def insert_sentiment_results(client: bigquery.Client, dataset: str, sentiment_table: str, rows: List[Dict[str, Any]]) -> None:
     """

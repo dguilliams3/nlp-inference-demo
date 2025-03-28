@@ -31,4 +31,4 @@ ENV CONFIG_FILE=config/config.yaml
 
 # Run the application using the entrypoint script with a task argument.
 # This launches the pipeline using the scripts in the /src directory.
-CMD ["python", "src/entrypoint.py", "--task", "bigquery"]
+CMD ["python", "src/entrypoint.py", "--mode", "bigquery"]

@@ -7,21 +7,21 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s [%(levelname)s] %(me
 logger = logging.getLogger(__name__)
 
 def main():
-    parser = argparse.ArgumentParser(description="Run NLP pipeline tasks.")
+    parser = argparse.ArgumentParser(description="Run NLP pipeline modes.")
     parser.add_argument(
-        '--task', 
+        '--mode', 
         type=str, 
         default='bigquery', 
-        help='Task to run. Options: "bigquery", "local".'
+        help='mode to run. Options: "bigquery", "local".'
     )
     args = parser.parse_args()
     
-    if args.task == 'bigquery':
+    if args.mode == 'bigquery':
         run_bigquery_pipeline()
-    elif args.task == 'local':
+    elif args.mode == 'local':
         run_local_pipeline()
     else:
-        logger.warning("Task '%s' not recognized. Running default task (bigquery).", args.task)
+        logger.warning("mode '%s' not recognized. Running default mode (bigquery).", args.mode)
         run_bigquery_pipeline()
 
 if __name__ == "__main__":

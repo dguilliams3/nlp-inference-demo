@@ -62,13 +62,13 @@ This project is an end-to-end MVP demonstrating cloud-based NLP inference, using
 export $(cat .env | xargs)
 
 # Run locally using config.yaml review text
-python src/entrypoint.py --task local
+python src/entrypoint.py --mode local
 ```
 
 ### 2. BigQuery Mode (Production-like)
 ```bash
 # Uses the service account key to connect to BigQuery
-python src/entrypoint.py --task bigquery
+python src/entrypoint.py --mode bigquery
 ```
 
 ### 3. Docker (Dev)

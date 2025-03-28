@@ -3,14 +3,13 @@ import yaml
 import random
 import datetime
 import torch
-import logging
 from transformers import pipeline
 from google.cloud import bigquery
 from typing import Any, Dict, List
+from logging_config import setup_logging
 
-# Setup basic logging configuration
-logging.basicConfig(level=logging.INFO, format='%(asctime)s [%(levelname)s] %(message)s')
-logger = logging.getLogger(__name__)
+# Intiiate Logging
+logger = setup_logging()
 
 def load_config(config_file: str) -> Dict[str, Any]:
     """Load configuration from a YAML file."""
@@ -139,6 +138,7 @@ def run_bigquery_pipeline() -> None:
     task = config.get("task")
     model = config.get("model")
     device = 0 if torch.cuda.is_available() else -1
+    logger.info(f"Using device: {device}")
 
     # Process all review texts at once
     review_texts = [row.review_text for row in reviews]

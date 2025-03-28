@@ -1,10 +1,10 @@
 import argparse
-import logging
 from bigquery_sentiment_pipeline import run_bigquery_pipeline
 from local_demo_nlp_sentiment_pipeline import run_local_pipeline
+from logging_config import setup_logging
 
-logging.basicConfig(level=logging.INFO, format='%(asctime)s [%(levelname)s] %(message)s')
-logger = logging.getLogger(__name__)
+# Intiiate Logging
+logger = setup_logging()
 
 def main():
     parser = argparse.ArgumentParser(description="Run NLP pipeline modes.")

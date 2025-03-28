@@ -1,14 +1,13 @@
 import os
 import yaml
 import torch
-import logging
 import numpy as np
 from transformers import pipeline
 from typing import Any, Dict, List, Tuple
+from logging_config import setup_logging
 
-# Setup logging configuration
-logging.basicConfig(level=logging.INFO, format='%(asctime)s [%(levelname)s] %(message)s')
-logger = logging.getLogger(__name__)
+# Intiiate Logging
+logger = setup_logging()
 
 def load_config(config_file: str) -> Dict[str, Any]:
     """Load configuration from a YAML file."""
@@ -44,6 +43,8 @@ def run_local_pipeline() -> None:
     sample_texts = config.get("sample_texts")
 
     device = 0 if torch.cuda.is_available() else -1
+    logger.info(f"Using device: {device}")
+    
     results, summary = analyze_sentiments(sample_texts, task, model, device)
 
     logger.info("Detailed Sentiment Analysis:")

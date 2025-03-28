@@ -49,7 +49,7 @@ def run_local_pipeline() -> None:
 
     logger.info("Detailed Sentiment Analysis:")
     for text, result in zip(sample_texts, results):
-        logger.info("- %s → %s (Confidence: %.4f)", text, result['label'], result['score'])
+        logger.info("- %s -> %s (Confidence: %.4f)", text, result['label'], result['score'])
 
     logger.info("Summary Statistics:")
     for key, value in summary.items():

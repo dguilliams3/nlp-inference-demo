@@ -1,4 +1,4 @@
-# NLP Inference Pipeline MVP  
+# NLP Inference Pipeline MVP
 **Sentiment Analysis with DistilBERT + BigQuery + Docker + CI/CD**
 
 This project is an end-to-end MVP demonstrating cloud-based NLP inference, using Hugging Face's `transformers` pipeline (`DistilBERT`) to analyze sentiment of product reviews stored in BigQuery. The system is fully containerized, config-driven, and CI/CD-enabled—making it a production-adjacent showcase of modern ML deployment patterns.

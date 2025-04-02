@@ -19,11 +19,15 @@ jobs:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
+      - name: Write GCP credentials file
+        run: |
+          mkdir -p ${{ github.workspace }}/credentials
+          echo "${{ secrets.GOOGLE_CREDENTIALS_FILE }}" > ${{ github.workspace }}/credentials/gcp_credentials.json
+
       - name: Pull and run container
         run: |
           docker pull dguilliams3/nlp_demo:latest
-          CRED_FILE=${{ secrets.GOOGLE_CREDENTIALS_FILE }}
           docker run \
-            -v ${{ github.workspace }}/credentials/$CRED_FILE:/app/credentials/$CRED_FILE \
-            -e GOOGLE_APPLICATION_CREDENTIALS=/app/credentials/$CRED_FILE \
+            -v ${{ github.workspace }}/credentials:/app/credentials \
+            -e GOOGLE_APPLICATION_CREDENTIALS=/app/credentials/gcp_credentials.json \
             dguilliams3/nlp_demo:latest

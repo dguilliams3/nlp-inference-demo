@@ -22,13 +22,16 @@ jobs:
       - name: Write GCP credentials file
         run: |
           mkdir -p ${{ github.workspace }}/credentials
-          # Use printf to output the secret exactly, then decode it
           printf "%s" "${{ secrets.GOOGLE_CREDENTIALS_FILE }}" | base64 --decode > ${{ github.workspace }}/credentials/gcp_credentials.json
+          echo "---- Begin credentials file ----"
+          head -n 10 ${{ github.workspace }}/credentials/gcp_credentials.json
+          tail -c 10 ${{ github.workspace }}/credentials/gcp_credentials.json | od -c
+          echo "---- End credentials file ----"
       - name: Pull and run container
         run: |
             docker pull dguilliams3/nlp_demo:latest
             docker run \
-              --env-file .env \
               -v ${{ github.workspace }}/credentials:/app/credentials \
               -e GOOGLE_APPLICATION_CREDENTIALS=/app/credentials/gcp_credentials.json \
               dguilliams3/nlp_demo:latest
+  

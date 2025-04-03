@@ -22,7 +22,7 @@ jobs:
       - name: Write GCP credentials file
         run: |
           mkdir -p ${{ github.workspace }}/credentials
-          printf "%s" "${{ secrets.GOOGLE_CREDENTIALS_FILE }}" | base64 --decode > ${{ github.workspace }}/credentials/gcp_credentials.json
+          printf "%s" "${{ secrets.GOOGLE_CREDENTIALS_JSON }}" | base64 --decode > ${{ github.workspace }}/credentials/gcp_credentials.json
           echo "---- Begin credentials file (head) ----"
           head -n 10 ${{ github.workspace }}/credentials/gcp_credentials.json
           echo "---- End head ----"

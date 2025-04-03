@@ -23,10 +23,14 @@ jobs:
         run: |
           mkdir -p ${{ github.workspace }}/credentials
           printf "%s" "${{ secrets.GOOGLE_CREDENTIALS_FILE }}" | base64 --decode > ${{ github.workspace }}/credentials/gcp_credentials.json
-          echo "---- Begin credentials file ----"
+          echo "---- Begin credentials file (head) ----"
           head -n 10 ${{ github.workspace }}/credentials/gcp_credentials.json
+          echo "---- End head ----"
+          echo "---- Validating JSON with jq ----"
+          jq . ${{ github.workspace }}/credentials/gcp_credentials.json || echo "❌ jq failed: Invalid JSON format"
+          echo "---- Tail (last 10 characters in octal) ----"
           tail -c 10 ${{ github.workspace }}/credentials/gcp_credentials.json | od -c
-          echo "---- End credentials file ----"
+        
       - name: Pull and run container
         run: |
             docker pull dguilliams3/nlp_demo:latest
